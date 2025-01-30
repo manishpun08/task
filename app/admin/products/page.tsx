@@ -1,8 +1,32 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+'use client';
 
-const Products = () => {
+import ProductTable from '@/components/admin/tables/ProductTable';
+import { Button } from '@/components/ui/button';
+import { getProducts } from '@/lib/admin/getAllProduct';
+import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+
+const Products: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const result = await getProducts();
+      if (result.success) {
+        setProducts(result.data);
+      } else {
+        console.error(result.message);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const handleProductDelete = (id: string) => {
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== id)
+    );
+  };
   return (
     <section className="w-full rounded-2xl bg-white p-7">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -15,7 +39,10 @@ const Products = () => {
       </div>
 
       <div className="mt-7 w-full overflow-hidden">
-        <p>Table</p>
+        <ProductTable
+          products={products}
+          onProductDelete={handleProductDelete}
+        />
       </div>
     </section>
   );

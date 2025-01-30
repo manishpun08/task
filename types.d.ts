@@ -24,3 +24,9 @@ interface ProductParams {
   category: string;
   image?: string;
 }
+interface Category {
+  id?: string;
+  title: string;
+  image?: string;
+  createdAt?: string;
+}

@@ -20,34 +20,42 @@ import { Button } from '@/components/ui/button';
 import FileUpload from '@/components/FileUpload';
 import { createProduct } from '@/lib/admin/product';
 import { toast } from '@/hooks/use-toast';
+import { updateProduct } from '@/lib/admin/editProduct';
 
 interface Props extends Partial<Product> {
   type?: 'create' | 'update';
+  id?: string;
 }
 
-const ProductForm = ({ type, ...product }: Props) => {
+const ProductForm = ({ type = 'create', id, ...product }: Props) => {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: '',
-      price: 1,
-      quantity: 1,
-      category: '',
-      description: '',
-      image: '',
+      name: product.name || '',
+      price: product.price || 1,
+      quantity: product.quantity || 1,
+      category: product.category || '',
+      description: product.description || '',
+      image: product.image || '',
     },
   });
 
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
-    const result = await createProduct(values);
+    let result;
+    if (type === 'create') {
+      result = await createProduct(values);
+    } else {
+      result = await updateProduct(id as string, values);
+    }
+
     if (result.success) {
       toast({
         title: 'Success',
-        description: 'Product created successfully',
+        description: `Product ${type === 'create' ? 'created' : 'updated'} successfully`,
       });
-      router.push(`/admin/products/${result.data.id}`);
+      router.push(`/admin/products`);
     } else {
       toast({
         title: 'Error',
@@ -59,11 +67,11 @@ const ProductForm = ({ type, ...product }: Props) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {/* product name  */}
         <FormField
           control={form.control}
-          name={'name'}
+          name="name"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-1">
               <FormLabel className="text-base font-normal text-dark-500">
@@ -84,7 +92,7 @@ const ProductForm = ({ type, ...product }: Props) => {
         {/* product price  */}
         <FormField
           control={form.control}
-          name={'price'}
+          name="price"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-1">
               <FormLabel className="text-base font-normal text-dark-500">
@@ -109,7 +117,7 @@ const ProductForm = ({ type, ...product }: Props) => {
         {/* product quantity  */}
         <FormField
           control={form.control}
-          name={'quantity'}
+          name="quantity"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-1">
               <FormLabel className="text-base font-normal text-dark-500">
@@ -134,7 +142,7 @@ const ProductForm = ({ type, ...product }: Props) => {
         {/* product category  */}
         <FormField
           control={form.control}
-          name={'category'}
+          name="category"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-1">
               <FormLabel className="text-base font-normal text-dark-500">
@@ -155,7 +163,7 @@ const ProductForm = ({ type, ...product }: Props) => {
         {/* product image  */}
         <FormField
           control={form.control}
-          name={'image'}
+          name="image"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-1">
               <FormLabel className="text-base font-normal text-dark-500">
@@ -179,7 +187,7 @@ const ProductForm = ({ type, ...product }: Props) => {
         {/* product description  */}
         <FormField
           control={form.control}
-          name={'description'}
+          name="description"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-1">
               <FormLabel className="text-base font-normal text-dark-500">
@@ -200,10 +208,11 @@ const ProductForm = ({ type, ...product }: Props) => {
         />
 
         <Button type="submit" className="book-form_btn text-white">
-          Submit Product
+          {type === 'create' ? 'Submit Product' : 'Update Product'}
         </Button>
       </form>
     </Form>
   );
 };
+
 export default ProductForm;
